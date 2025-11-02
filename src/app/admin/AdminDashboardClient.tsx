@@ -8,6 +8,7 @@ import { useGetDoctors } from '@/hooks/use-doctor';
 import { useGetAppointments } from '@/hooks/use-appointment';
 import AdminStats from '@/components/admin/AdminStats';
 import DoctorsManagement from '@/components/admin/DoctorsManagement';
+import RecentAppointments from '@/components/admin/RecentAppointments';
 
 
 const AdminDashboardClient = () => {
@@ -61,6 +62,8 @@ const AdminDashboardClient = () => {
         />
 
         <DoctorsManagement />
+
+        <RecentAppointments />
 
       </div>
     </div>
