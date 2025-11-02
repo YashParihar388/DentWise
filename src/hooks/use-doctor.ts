@@ -1,42 +1,51 @@
-"use client"
+"use client";
 
-import { createDoctor, getDoctors, UpdateDoctor } from "@/lib/actions/doctors"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { createDoctor, getAvailableDoctors, getDoctors, updateDoctor } from "@/lib/actions/doctors";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export function useGetDoctors(){
-    const result = useQuery({
-        queryKey:["getDoctors"],
-        queryFn: getDoctors
-    }) 
+export function useGetDoctors() {
+  const result = useQuery({
+    queryKey: ["getDoctors"],
+    queryFn: getDoctors,
+  });
 
-    return result;
+  return result;
 }
 
-export function useCreateDoctors(){
-    const queryClient = useQueryClient();
-    const result=useMutation({
-        mutationFn:createDoctor,
-        onSuccess:()=>{
-            //invalidate the related queries to reefresh the data without manually refreshingc
-            queryClient.invalidateQueries({queryKey:["getDoctors"]});
-        },
-        onError:(error)=>console.log("Error while creating doctor",error),
+export function useCreateDoctors() {
+  const queryClient = useQueryClient();
 
-    })
+  const result = useMutation({
+    mutationFn: createDoctor,
+    onSuccess: () => {
+      // invalidate related queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["getDoctors"] });
+    },
+    onError: (error) => console.log("Error while  creating a doctor"),
+  });
 
-    return result
+  return result;
 }
-export function useUpdateDoctors(){
-    const queryClient = useQueryClient();
-    const result=useMutation({
-        mutationFn:UpdateDoctor,
-        onSuccess:()=>{
-            //invalidate the related queries to reefresh the data without manually refreshingc
-            queryClient.invalidateQueries({queryKey:["getDoctors"]});
-        },
-        onError:(error)=>console.log("Error while creating doctor",error),
 
-    })
+export function useUpdateDoctor() {
+  const queryClient = useQueryClient();
 
-    return result
+  return useMutation({
+    mutationFn: updateDoctor,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getDoctors"] });
+      queryClient.invalidateQueries({ queryKey: ["getAvailableDoctors"] });
+    },
+    onError: (error) => console.error("Failed to update doctor:", error),
+  });
+}
+
+// get available doctors for appointments
+export function useAvailableDoctors() {
+  const result = useQuery({
+    queryKey: ["getAvailableDoctors"],
+    queryFn: getAvailableDoctors,
+  });
+
+  return result;
 }
