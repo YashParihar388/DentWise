@@ -5,6 +5,7 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 
 
 import { prisma } from "../prisma";
+import { AppointmentStatus } from "@prisma/client";
 
 /** normalize appointment for UI */
 function transformAppointment(appointment: any) {
@@ -188,18 +189,18 @@ export async function bookAppointment(input: BookAppointmentInput) {
     throw new Error("Failed to book appointment. Please try again later.");
   }
 }
-/* duplicate getUserAppointments removed — use the earlier exported implementation that includes createUserIfMissing */
-// export async function updateAppointmentStatus(input: { id: string; status: AppointmentStatus }) {
-//   try {
-//     const appointment = await prisma.appointment.update({
-//       where: { id: input.id },
-//       data: { status: input.status },
-//     });
+// /* duplicate getUserAppointments removed — use the earlier exported implementation that includes createUserIfMissing */
+export async function updateAppointmentStatus(input: { id: string; status: AppointmentStatus }) {
+  try {
+    const appointment = await prisma.appointment.update({
+      where: { id: input.id },
+      data: { status: input.status },
+    });
 
-//     return appointment;
-//   } catch (error) {
-//     console.error("Error updating appointment:", error);
-//     throw new Error("Failed to update appointment");
-//   }
-// }
+    return appointment;
+  } catch (error) {
+    console.error("Error updating appointment:", error);
+    throw new Error("Failed to update appointment");
+  }
+}
 
