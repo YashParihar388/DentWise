@@ -1,16 +1,13 @@
 import AppointmentConfirmationEmail from "@/components/emails/AppointmentConfirmationEmail";
-
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-
-// ✅ instantiate the Resend client
 const resend = new Resend(process.env.RESEND_API_KEY);
-
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    console.log("📩 Received email request:", body);
 
     const {
       userEmail,
@@ -22,16 +19,17 @@ export async function POST(request: Request) {
       price,
     } = body;
 
-    // validate required fields
     if (!userEmail || !doctorName || !appointmentDate || !appointmentTime) {
+      console.error("❌ Missing fields:", body);
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // send the email
+    console.log("✅ Sending email via Resend...");
+    console.log("Using API key:", process.env.RESEND_API_KEY ? "✅ Set" : "❌ Missing");
 
     const { data, error } = await resend.emails.send({
-      from: "DentWise <no-reply@resend.dev>",
-      to: [userEmail],
+      from: "DentWise <onboarding@resend.dev>", // Always works for testing
+      to: ["yparihar8085@gmail.com"],
       subject: "Appointment Confirmation - DentWise",
       react: AppointmentConfirmationEmail({
         doctorName,
@@ -44,16 +42,14 @@ export async function POST(request: Request) {
     });
 
     if (error) {
-      console.error("Resend error:", error);
-      return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+      console.error("❌ Resend API error:", error);
+      return NextResponse.json({ error: JSON.stringify(error) }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { message: "Email sent successfully", emailId: data?.id },
-      { status: 200 }
-    );
+    console.log("✅ Email sent successfully:", data);
+    return NextResponse.json({ success: true, id: data?.id });
   } catch (error) {
-    console.error("Email sending error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error("🔥 Email route crashed:", error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 }

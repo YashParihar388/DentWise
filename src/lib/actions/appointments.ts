@@ -179,9 +179,37 @@ export async function bookAppointment(input: BookAppointmentInput) {
             email: true,
           },
         },
-        doctor: { select: { name: true, imageUrl: true } },
+        doctor: { select: { name: true, imageUrl: true, speciality: true } },
       },
     });
+
+    // Send confirmation email
+    try {
+      const resend = (await import("../actions/resend")).default;
+      const { default: AppointmentConfirmationEmail } = await import("@/components/emails/AppointmentConfirmationEmail");
+      
+      await resend.emails.send({
+        from: "DentWise <appointment@dentwise.com>",
+        to: [user.email],
+        subject: "Your Dental Appointment Confirmation",
+        react: AppointmentConfirmationEmail({
+          doctorName: appointment.doctor.name,
+          appointmentDate: new Date(appointment.date).toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          appointmentTime: appointment.time,
+          appointmentType: appointment.reason || "General consultation",
+          duration: "30 minutes",
+          price: "₹500",
+        }) as React.ReactElement,
+      });
+    } catch (emailError) {
+      console.error("Failed to send confirmation email:", emailError);
+      // Don't throw the error - we still want to return the appointment even if email fails
+    }
 
     return transformAppointment(appointment);
   } catch (error) {
